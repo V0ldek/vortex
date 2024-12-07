@@ -29,7 +29,6 @@ vortex-dtype = { workspace = true }
 vortex-error = { workspace = true }
 vortex-fastlanes = { workspace = true }
 vortex-fsst = { workspace = true }
-vortex-roaring = { workspace = true }
 vortex-runend = { workspace = true }
 vortex-runend-bool = { workspace = true }
 vortex-zigzag = { workspace = true }

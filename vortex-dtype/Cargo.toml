@@ -28,7 +28,6 @@ prost = { workspace = true, optional = true }
 serde = { workspace = true, optional = true, features = ["rc", "derive"] }
 vortex-error = { workspace = true }
 vortex-flatbuffers = { workspace = true, optional = true }
-vortex-proto = { workspace = true, optional = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }
@@ -45,5 +44,4 @@ flatbuffers = [
     # enable flatbuffers generated code for scalar
     "vortex-flatbuffers/dtype",
 ]
-proto = ["dep:prost", "vortex-proto/dtype"]
 serde = ["dep:serde"]

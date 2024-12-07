@@ -1,6 +1,6 @@
 use arrow_array::builder::make_view;
-use arrow_buffer::Buffer;
-use vortex_array::array::{PrimitiveArray, VarBinArray, VarBinViewArray};
+use arrow_buffer::ScalarBuffer;
+use vortex_array::array::{PrimitiveArray, VarBinArray, VarBinViewArray, BinaryView};
 use vortex_array::{
     ArrayDType, ArrayData, Canonical, IntoArrayData, IntoArrayVariant, IntoCanonical,
 };
@@ -36,7 +36,7 @@ impl IntoCanonical for FSSTArray {
             let uncompressed_lens_slice = uncompressed_lens_array.maybe_null_slice::<i32>();
 
             // Directly create the binary views.
-            let views: Vec<u128> = uncompressed_lens_slice
+            let views: Vec<BinaryView> = uncompressed_lens_slice
                 .iter()
                 .scan(0, |offset, len| {
                     let str_start = *offset;
@@ -44,15 +44,17 @@ impl IntoCanonical for FSSTArray {
 
                     *offset += len;
 
-                    Some(make_view(
+                    let raw = make_view(
                         &uncompressed_bytes[(str_start as usize)..(str_end as usize)],
                         0u32,
                         str_start as u32,
-                    ))
+                    );
+
+                    Some(raw.into())
                 })
                 .collect();
 
-            let views_array: ArrayData = Buffer::from(views).into();
+            let views_array: ArrayData = ScalarBuffer::<BinaryView>::from(views).into_inner().into();
             let uncompressed_bytes_array = PrimitiveArray::from(uncompressed_bytes).into_array();
 
             VarBinViewArray::try_new(

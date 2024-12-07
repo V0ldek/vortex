@@ -21,15 +21,6 @@ mod nullability;
 mod ptype;
 mod serde;
 
-#[cfg(feature = "proto")]
-pub mod proto {
-    //! Protocol buffer representations for DTypes
-    //!
-    //! This module contains the code to serialize and deserialize DTypes to and from protocol buffers.
-
-    pub use vortex_proto::dtype;
-}
-
 #[cfg(feature = "flatbuffers")]
 pub mod flatbuffers {
     //! Flatbuffer representations for DTypes

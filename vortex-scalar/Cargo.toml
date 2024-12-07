@@ -31,7 +31,6 @@ vortex-datetime-dtype = { workspace = true }
 vortex-dtype = { workspace = true }
 vortex-error = { workspace = true }
 vortex-flatbuffers = { workspace = true, optional = true }
-vortex-proto = { workspace = true, optional = true }
 
 [lints]
 workspace = true
@@ -40,7 +39,6 @@ workspace = true
 # Uncomment for improved IntelliJ support
 #default = ["flatbuffers", "proto", "serde"]
 arbitrary = ["dep:arbitrary"]
-datafusion = ["dep:datafusion-common"]
 flatbuffers = [
     "dep:flatbuffers",
     "dep:flexbuffers",
@@ -50,11 +48,5 @@ flatbuffers = [
     "vortex-error/flatbuffers",
     "vortex-error/flexbuffers",
     "vortex-dtype/flatbuffers",
-]
-proto = [
-    "dep:prost",
-    "dep:prost-types",
-    "vortex-dtype/proto",
-    "vortex-proto/scalar",
 ]
 serde = ["dep:serde", "serde/derive", "vortex-dtype/serde"]

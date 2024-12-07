@@ -6,7 +6,7 @@ use ::serde::{Deserialize, Serialize};
 use arrow_array::builder::{BinaryViewBuilder, GenericByteViewBuilder, StringViewBuilder};
 use arrow_array::types::{BinaryViewType, ByteViewType, StringViewType};
 use arrow_array::{ArrayRef, BinaryViewArray, GenericByteViewArray, StringViewArray};
-use arrow_buffer::ScalarBuffer;
+use arrow_buffer::{ArrowNativeType, ScalarBuffer};
 use itertools::Itertools;
 use static_assertions::{assert_eq_align, assert_eq_size};
 use vortex_buffer::Buffer;
@@ -99,7 +99,7 @@ impl Ref {
 }
 
 #[derive(Clone, Copy)]
-#[repr(C, align(8))]
+#[repr(C, align(16))]
 pub union BinaryView {
     // Numeric representation. This is logically `u128`, but we split it into the high and low
     // bits to preserve the alignment.
@@ -115,7 +115,7 @@ pub union BinaryView {
 assert_eq_size!(BinaryView, [u8; 16]);
 assert_eq_size!(Inlined, [u8; 16]);
 assert_eq_size!(Ref, [u8; 16]);
-assert_eq_align!(BinaryView, u64);
+assert_eq_align!(BinaryView, BinaryView);
 
 impl BinaryView {
     pub const MAX_INLINED_SIZE: usize = 12;
@@ -173,6 +173,52 @@ impl From<u128> for BinaryView {
         BinaryView {
             le_bytes: value.to_le_bytes(),
         }
+    }
+}
+
+impl Default for BinaryView {
+    fn default() -> Self {
+        Self::from(0_u128)
+    }
+}
+
+impl PartialOrd for BinaryView {
+    fn partial_cmp(&self, _other: &Self) -> Option<std::cmp::Ordering> {
+        None
+    }
+}
+
+impl PartialEq for BinaryView {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_u128() == other.as_u128()
+    }
+}
+
+impl Eq for BinaryView {}
+
+impl ArrowNativeType for BinaryView {
+    fn from_usize(v: usize) -> Option<Self> {
+        u128::try_from(v).ok().map(Self::from)
+    }
+
+    fn as_usize(self) -> usize {
+        self.as_u128() as _
+    }
+
+    fn usize_as(i: usize) -> Self {
+        BinaryView::from(i as u128)
+    }
+
+    fn to_usize(self) -> Option<usize> {
+        self.as_u128().try_into().ok()
+    }
+
+    fn to_isize(self) -> Option<isize> {
+        self.as_u128().try_into().ok()
+    }
+
+    fn to_i64(self) -> Option<i64> {
+        self.as_u128().try_into().ok()
     }
 }
 
@@ -236,6 +282,8 @@ impl VarBinViewArray {
         dtype: DType,
         validity: Validity,
     ) -> VortexResult<Self> {
+        assert_eq!(views.buffer().unwrap().as_ptr().align_offset(16), 0);
+
         if !matches!(views.dtype(), &DType::BYTES) {
             vortex_bail!(MismatchedTypes: "views u8", views.dtype());
         }

@@ -6,7 +6,6 @@ use vortex_array::aliases::hash_set::HashSet;
 
 mod binary;
 mod column;
-pub mod datafusion;
 mod identity;
 mod literal;
 mod not;

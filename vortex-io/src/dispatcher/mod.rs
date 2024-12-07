@@ -1,29 +1,23 @@
 #[cfg(feature = "compio")]
 mod compio;
-#[cfg(feature = "tokio")]
-mod tokio;
+mod sync;
 use std::future::Future;
 
 use futures::channel::oneshot;
-#[cfg(not(any(feature = "compio", feature = "tokio")))]
-use vortex_error::vortex_panic;
 use vortex_error::VortexResult;
 
 #[cfg(feature = "compio")]
 use self::compio::*;
-#[cfg(feature = "tokio")]
-use self::tokio::*;
+use self::sync::*;
 
 mod sealed {
     pub trait Sealed {}
 
     impl Sealed for super::IoDispatcher {}
+    impl Sealed for super::SyncDispatcher {}
 
     #[cfg(feature = "compio")]
     impl Sealed for super::CompioDispatcher {}
-
-    #[cfg(feature = "tokio")]
-    impl Sealed for super::TokioDispatcher {}
 }
 
 /// A trait for types that may be dispatched.
@@ -62,20 +56,17 @@ pub struct IoDispatcher(Inner);
 
 #[derive(Debug)]
 enum Inner {
-    #[cfg(feature = "tokio")]
-    Tokio(TokioDispatcher),
     #[cfg(feature = "compio")]
     Compio(CompioDispatcher),
+    Sync(SyncDispatcher),
 }
 
 impl Default for IoDispatcher {
     fn default() -> Self {
-        #[cfg(feature = "tokio")]
-        return Self(Inner::Tokio(TokioDispatcher::new(1)));
-        #[cfg(all(feature = "compio", not(feature = "tokio")))]
+        #[cfg(feature = "compio")]
         return Self(Inner::Compio(CompioDispatcher::new(1)));
-        #[cfg(not(any(feature = "compio", feature = "tokio")))]
-        vortex_panic!("must enable one of compio or tokio to use IoDispatcher");
+        #[cfg(not(feature = "compio"))]
+        return Self(Inner::Sync(SyncDispatcher::new()));
     }
 }
 
@@ -88,34 +79,22 @@ impl Dispatch for IoDispatcher {
         R: Send + 'static,
     {
         match self.0 {
-            #[cfg(feature = "tokio")]
-            Inner::Tokio(ref tokio_dispatch) => tokio_dispatch.dispatch(task),
             #[cfg(feature = "compio")]
             Inner::Compio(ref compio_dispatch) => compio_dispatch.dispatch(task),
+            Inner::Sync(ref sync_dispatch) => sync_dispatch.dispatch(task),
         }
     }
 
     fn shutdown(self) -> VortexResult<()> {
         match self.0 {
-            #[cfg(feature = "tokio")]
-            Inner::Tokio(tokio_dispatch) => tokio_dispatch.shutdown(),
             #[cfg(feature = "compio")]
             Inner::Compio(compio_dispatch) => compio_dispatch.shutdown(),
+            Inner::Sync(sync_dispatch) => sync_dispatch.shutdown(),
         }
     }
 }
 
 impl IoDispatcher {
-    /// Create a new IO dispatcher that uses a set of Tokio `current_thread` runtimes to
-    /// execute both `Send` and `!Send` futures.
-    ///
-    /// A handle to the dispatcher can be passed freely among threads, allowing multiple parties to
-    /// perform dispatching across different threads.
-    #[cfg(feature = "tokio")]
-    pub fn new_tokio(num_thread: usize) -> Self {
-        Self(Inner::Tokio(TokioDispatcher::new(num_thread)))
-    }
-
     #[cfg(feature = "compio")]
     pub fn new_compio(num_threads: usize) -> Self {
         Self(Inner::Compio(CompioDispatcher::new(num_threads)))

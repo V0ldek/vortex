@@ -193,7 +193,7 @@ fn pack_views(
     validity: Validity,
 ) -> VortexResult<VarBinViewArray> {
     let total_len = chunks.iter().map(|a| a.len()).sum();
-    let mut views: Vec<u128> = Vec::with_capacity(total_len);
+    let mut views: Vec<_> = Vec::with_capacity(total_len);
     let mut buffers = Vec::new();
     for chunk in chunks {
         // Each chunk's views have buffer IDs that are zero-referenced.
@@ -210,7 +210,7 @@ fn pack_views(
         for view in canonical_chunk.binary_views()? {
             if view.is_inlined() {
                 // Inlined views can be copied directly into the output
-                views.push(view.as_u128());
+                views.push(view);
             } else {
                 // Referencing views must have their buffer_index adjusted with new offsets
                 let view_ref = view.as_view();
@@ -220,14 +220,13 @@ fn pack_views(
                         *view_ref.prefix(),
                         (buffers_offset as u32) + view_ref.buffer_index(),
                         view_ref.offset(),
-                    )
-                    .as_u128(),
+                    ),
                 );
             }
         }
     }
 
-    let views_buffer: Buffer = ScalarBuffer::<u128>::from(views).into_inner();
+    let views_buffer: Buffer = ScalarBuffer::<BinaryView>::from(views).into_inner();
     VarBinViewArray::try_new(
         ArrayData::from(views_buffer),
         buffers,

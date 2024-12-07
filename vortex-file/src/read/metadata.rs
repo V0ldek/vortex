@@ -1,13 +1,12 @@
 use std::future::Future;
-use std::pin::Pin;
+use std::pin::{pin, Pin};
 use std::sync::{Arc, RwLock};
 use std::task::{ready, Context, Poll};
 
 use futures::future::BoxFuture;
-use futures::FutureExt as _;
 use vortex_array::ArrayData;
-use vortex_error::{vortex_bail, vortex_panic, VortexExpect as _, VortexResult};
-use vortex_io::{Dispatch as _, IoDispatcher, VortexReadAt};
+use vortex_error::{vortex_panic, VortexResult};
+use vortex_io::{IoDispatcher, VortexReadAt};
 
 use super::stream::{read_ranges, StreamMessages};
 use super::{LayoutMessageCache, LayoutReader, MessageLocator, MetadataRead};
@@ -15,7 +14,7 @@ use crate::read::stream::Message;
 
 pub struct MetadataFetcher<R: VortexReadAt> {
     input: R,
-    dispatcher: Arc<IoDispatcher>,
+    _dispatcher: Arc<IoDispatcher>,
     root_layout: Box<dyn LayoutReader>,
     layout_cache: Arc<RwLock<LayoutMessageCache>>,
     state: State,
@@ -23,6 +22,7 @@ pub struct MetadataFetcher<R: VortexReadAt> {
 
 enum State {
     Initial,
+    #[allow(dead_code)]
     Reading(BoxFuture<'static, VortexResult<StreamMessages>>),
 }
 
@@ -35,7 +35,7 @@ impl<R: VortexReadAt + Unpin> MetadataFetcher<R> {
     ) -> Self {
         Self {
             input,
-            dispatcher,
+            _dispatcher: dispatcher,
             root_layout,
             layout_cache,
             state: State::Initial,
@@ -48,20 +48,10 @@ impl<R: VortexReadAt + Unpin> MetadataFetcher<R> {
     fn read_ranges(
         &self,
         ranges: Vec<MessageLocator>,
-    ) -> BoxFuture<'static, VortexResult<StreamMessages>> {
+    ) -> impl Future<Output = VortexResult<StreamMessages>> {
         let reader = self.input.clone();
 
-        let result_rx = self
-            .dispatcher
-            .dispatch(move || async move { read_ranges(reader, ranges).await })
-            .vortex_expect("dispatch async task");
-
-        result_rx
-            .map(|res| match res {
-                Ok(result) => result,
-                Err(e) => vortex_bail!("dispatcher channel canceled: {e}"),
-            })
-            .boxed()
+        read_ranges(reader, ranges)
     }
 }
 
@@ -73,8 +63,21 @@ impl<R: VortexReadAt + Unpin> Future for MetadataFetcher<R> {
             match &mut self.state {
                 State::Initial => match self.root_layout.read_metadata()? {
                     MetadataRead::ReadMore(messages) => {
-                        let read_future = self.read_ranges(messages);
-                        self.state = State::Reading(read_future);
+                        let mut read_future = self.read_ranges(messages);
+                        let messages = ready!(pin!(read_future).poll(cx))?;
+    
+                        match self.layout_cache.write() {
+                            Ok(mut cache) => {
+                                for Message(message_id, bytes) in messages.into_iter() {
+                                    cache.set(message_id, bytes);
+                                }
+                            }
+                            Err(poison) => {
+                                vortex_panic!("Failed to write to message cache: {poison}")
+                            }
+                        }
+    
+                        self.state = State::Initial;
                     }
                     MetadataRead::Batches(array_data) => {
                         return Poll::Ready(Ok(Some(array_data)));
@@ -83,22 +86,7 @@ impl<R: VortexReadAt + Unpin> Future for MetadataFetcher<R> {
                         return Poll::Ready(Ok(None));
                     }
                 },
-                State::Reading(ref mut f) => {
-                    let messages = ready!(f.poll_unpin(cx))?;
-
-                    match self.layout_cache.write() {
-                        Ok(mut cache) => {
-                            for Message(message_id, bytes) in messages.into_iter() {
-                                cache.set(message_id, bytes);
-                            }
-                        }
-                        Err(poison) => {
-                            vortex_panic!("Failed to write to message cache: {poison}")
-                        }
-                    }
-
-                    self.state = State::Initial;
-                }
+                State::Reading(ref mut _f) => unimplemented!()
             }
         }
     }

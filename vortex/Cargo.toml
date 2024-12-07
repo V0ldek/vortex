@@ -38,11 +38,9 @@ vortex-flatbuffers = { workspace = true }
 vortex-fsst = { workspace = true }
 vortex-io = { workspace = true }
 vortex-ipc = { workspace = true }
-vortex-proto = { workspace = true }
-vortex-roaring = { workspace = true }
 vortex-runend = { workspace = true }
 vortex-runend-bool = { workspace = true }
-vortex-sampling-compressor = { workspace = true }
+vortex-sampling-compressor = { workspace = true, optional = true }
 vortex-scalar = { workspace = true, default-features = true }
 vortex-zigzag = { workspace = true }
 
@@ -50,3 +48,4 @@ vortex-zigzag = { workspace = true }
 object_store = ["vortex-file/object_store"]
 parquet = ["vortex-error/parquet"]
 python = ["vortex-error/python"]
+compressor = ["dep:vortex-sampling-compressor"]

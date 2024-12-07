@@ -5,8 +5,6 @@ use compressors::chunked::DEFAULT_CHUNKED_COMPRESSOR;
 use compressors::constant::ConstantCompressor;
 use compressors::delta::DeltaCompressor;
 use compressors::fsst::FSSTCompressor;
-use compressors::roaring_bool::RoaringBoolCompressor;
-use compressors::roaring_int::RoaringIntCompressor;
 use compressors::struct_::StructCompressor;
 use compressors::varbin::VarBinCompressor;
 use compressors::{CompressedArray, CompressionTree, CompressorRef};
@@ -21,7 +19,6 @@ use vortex_datetime_parts::DateTimePartsEncoding;
 use vortex_dict::DictEncoding;
 use vortex_fastlanes::{BitPackedEncoding, DeltaEncoding, FoREncoding};
 use vortex_fsst::FSSTEncoding;
-use vortex_roaring::{RoaringBoolEncoding, RoaringIntEncoding};
 use vortex_runend::RunEndEncoding;
 use vortex_runend_bool::RunEndBoolEncoding;
 use vortex_zigzag::ZigZagEncoding;
@@ -64,7 +61,7 @@ pub const DEFAULT_COMPRESSORS: [CompressorRef; 14] = [
     &ZigZagCompressor,
 ];
 
-pub const ALL_COMPRESSORS: [CompressorRef; 17] = [
+pub const ALL_COMPRESSORS: [CompressorRef; 15] = [
     &ALPCompressor as CompressorRef,
     &BITPACK_WITH_PATCHES,
     &DEFAULT_CHUNKED_COMPRESSOR,
@@ -74,8 +71,6 @@ pub const ALL_COMPRESSORS: [CompressorRef; 17] = [
     &DictCompressor,
     &FoRCompressor,
     &FSSTCompressor,
-    &RoaringBoolCompressor,
-    &RoaringIntCompressor,
     &RunEndBoolCompressor,
     &DEFAULT_RUN_END_COMPRESSOR,
     &SparseCompressor,
@@ -96,8 +91,6 @@ pub static ALL_ENCODINGS_CONTEXT: LazyLock<Arc<Context>> = LazyLock::new(|| {
         &FoREncoding,
         &FSSTEncoding,
         &PrimitiveEncoding,
-        &RoaringBoolEncoding,
-        &RoaringIntEncoding,
         &RunEndEncoding,
         &RunEndBoolEncoding,
         &SparseEncoding,

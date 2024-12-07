@@ -25,12 +25,6 @@ pub trait AsyncRuntime {
     fn block_on<F: Future>(&self, fut: F) -> F::Output;
 }
 
-impl AsyncRuntime for tokio::runtime::Runtime {
-    fn block_on<F: Future>(&self, fut: F) -> F::Output {
-        self.block_on(fut)
-    }
-}
-
 pub struct VortexRecordBatchReader<'a, R, AR> {
     stream: VortexFileArrayStream<R>,
     arrow_schema: SchemaRef,

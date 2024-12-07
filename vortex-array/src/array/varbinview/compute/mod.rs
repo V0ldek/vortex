@@ -14,6 +14,8 @@ use crate::validity::Validity;
 use crate::variants::PrimitiveArrayTrait;
 use crate::{ArrayDType, ArrayData, IntoArrayData, IntoArrayVariant};
 
+use super::BinaryView;
+
 impl ComputeVTable for VarBinViewEncoding {
     fn scalar_at_fn(&self) -> Option<&dyn ScalarAtFn<ArrayData>> {
         Some(self)
@@ -67,7 +69,7 @@ impl TakeFn<VarBinViewArray> for VarBinViewEncoding {
 
         // Convert our views array into an Arrow u128 ScalarBuffer (16 bytes per view)
         let views_buffer =
-            ScalarBuffer::<u128>::from(array.views().into_primitive()?.into_buffer().into_arrow());
+            ScalarBuffer::<BinaryView>::from(array.views().into_primitive()?.into_buffer().into_arrow());
 
         let indices = indices.clone().into_primitive()?;
 
@@ -97,17 +99,17 @@ impl TakeFn<VarBinViewArray> for VarBinViewEncoding {
 }
 
 fn take_views<I: AsPrimitive<usize>>(
-    views: ScalarBuffer<u128>,
+    views: ScalarBuffer<BinaryView>,
     indices: &[I],
-) -> ScalarBuffer<u128> {
-    ScalarBuffer::<u128>::from_iter(indices.iter().map(|i| views[i.as_()]))
+) -> ScalarBuffer<BinaryView> {
+    ScalarBuffer::<BinaryView>::from_iter(indices.iter().map(|i| views[i.as_()]))
 }
 
 fn take_views_unchecked<I: AsPrimitive<usize>>(
-    views: ScalarBuffer<u128>,
+    views: ScalarBuffer<BinaryView>,
     indices: &[I],
-) -> ScalarBuffer<u128> {
-    ScalarBuffer::<u128>::from_iter(
+) -> ScalarBuffer<BinaryView> {
+    ScalarBuffer::<BinaryView>::from_iter(
         indices
             .iter()
             .map(|i| unsafe { *views.get_unchecked(i.as_()) }),

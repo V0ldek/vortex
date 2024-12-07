@@ -10,7 +10,6 @@ pub mod arbitrary;
 mod arrow;
 mod binary;
 mod bool;
-mod datafusion;
 mod display;
 mod extension;
 mod list;
