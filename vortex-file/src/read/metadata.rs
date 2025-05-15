@@ -63,7 +63,7 @@ impl<R: VortexReadAt + Unpin> Future for MetadataFetcher<R> {
             match &mut self.state {
                 State::Initial => match self.root_layout.read_metadata()? {
                     MetadataRead::ReadMore(messages) => {
-                        let mut read_future = self.read_ranges(messages);
+                        let read_future = self.read_ranges(messages);
                         let messages = ready!(pin!(read_future).poll(cx))?;
     
                         match self.layout_cache.write() {

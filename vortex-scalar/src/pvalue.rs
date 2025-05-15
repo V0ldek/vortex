@@ -125,51 +125,51 @@ impl PValue {
         );
 
         match self {
-            PValue::U8(v) => unsafe { mem::transmute::<u8, i8>(*v) }.into(),
+            PValue::U8(v) => v.cast_signed().into(),
             PValue::U16(v) => match ptype {
-                PType::I16 => unsafe { mem::transmute::<u16, i16>(*v) }.into(),
+                PType::I16 => v.cast_signed().into(),
                 PType::F16 => unsafe { mem::transmute::<u16, f16>(*v) }.into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::U32(v) => match ptype {
-                PType::I32 => unsafe { mem::transmute::<u32, i32>(*v) }.into(),
-                PType::F32 => unsafe { mem::transmute::<u32, f32>(*v) }.into(),
+                PType::I32 => v.cast_signed().into(),
+                PType::F32 => f32::from_bits(*v).into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::U64(v) => match ptype {
-                PType::I64 => unsafe { mem::transmute::<u64, i64>(*v) }.into(),
-                PType::F64 => unsafe { mem::transmute::<u64, f64>(*v) }.into(),
+                PType::I64 => v.cast_signed().into(),
+                PType::F64 => f64::from_bits(*v).into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
-            PValue::I8(v) => unsafe { mem::transmute::<i8, u8>(*v) }.into(),
+            PValue::I8(v) => v.cast_unsigned().into(),
             PValue::I16(v) => match ptype {
-                PType::U16 => unsafe { mem::transmute::<i16, u16>(*v) }.into(),
+                PType::U16 => v.cast_unsigned().into(),
                 PType::F16 => unsafe { mem::transmute::<i16, f16>(*v) }.into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::I32(v) => match ptype {
-                PType::U32 => unsafe { mem::transmute::<i32, u32>(*v) }.into(),
-                PType::F32 => unsafe { mem::transmute::<i32, f32>(*v) }.into(),
+                PType::U32 => v.cast_unsigned().into(),
+                PType::F32 => f32::from_bits(v.cast_unsigned()).into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::I64(v) => match ptype {
-                PType::U64 => unsafe { mem::transmute::<i64, u64>(*v) }.into(),
-                PType::F64 => unsafe { mem::transmute::<i64, f64>(*v) }.into(),
+                PType::U64 => v.cast_unsigned().into(),
+                PType::F64 => f64::from_bits(v.cast_unsigned()).into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::F16(v) => match ptype {
-                PType::U16 => unsafe { mem::transmute::<f16, u16>(*v) }.into(),
-                PType::I16 => unsafe { mem::transmute::<f16, i16>(*v) }.into(),
+                PType::U16 => v.to_bits().into(),
+                PType::I16 => v.to_bits().cast_signed().into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::F32(v) => match ptype {
-                PType::U32 => unsafe { mem::transmute::<f32, u32>(*v) }.into(),
-                PType::I32 => unsafe { mem::transmute::<f32, i32>(*v) }.into(),
+                PType::U32 => v.to_bits().into(),
+                PType::I32 => v.to_bits().cast_signed().into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
             PValue::F64(v) => match ptype {
-                PType::U64 => unsafe { mem::transmute::<f64, u64>(*v) }.into(),
-                PType::I64 => unsafe { mem::transmute::<f64, i64>(*v) }.into(),
+                PType::U64 => v.to_bits().into(),
+                PType::I64 => v.to_bits().cast_signed().into(),
                 _ => unreachable!("Only same width type are allowed to be reinterpreted"),
             },
         }

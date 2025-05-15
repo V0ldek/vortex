@@ -1,3 +1,5 @@
+extern crate core;
+
 use std::cmp::Ordering;
 use std::sync::Arc;
 
