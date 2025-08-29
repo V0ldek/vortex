@@ -73,7 +73,7 @@ impl InlineDTypeLayoutReader {
         }
     }
 
-    fn flatbuffer(&self) -> footer::Layout {
+    fn flatbuffer(&self) -> footer::Layout<'_> {
         unsafe {
             let tab = flatbuffers::Table::new(&self.fb_bytes, self.fb_loc);
             footer::Layout::init_from_table(tab)
@@ -111,7 +111,7 @@ impl InlineDTypeLayoutReader {
         )
     }
 
-    fn child_layout(&self) -> VortexResult<footer::Layout> {
+    fn child_layout(&self) -> VortexResult<footer::Layout<'_>> {
         let children = self.flatbuffer().children().unwrap_or_default();
         if children.is_empty() {
             vortex_bail!("Missing children for inline dtype layout")

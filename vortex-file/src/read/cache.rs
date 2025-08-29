@@ -251,14 +251,14 @@ fn project_dtype_bytes(bytes: &[u8], dtype_field: &SerializedDTypeField) -> Vort
     }
 }
 
-fn fb_struct(bytes: &[u8]) -> VortexResult<Struct_> {
+fn fb_struct(bytes: &[u8]) -> VortexResult<Struct_<'_>> {
     fb_schema(bytes)
         .dtype()
         .and_then(|d| d.type__as_struct_())
         .ok_or_else(|| vortex_err!("The top-level type should be a struct"))
 }
 
-fn fb_schema(bytes: &[u8]) -> message::Schema {
+fn fb_schema(bytes: &[u8]) -> message::Schema<'_> {
     unsafe { root_unchecked::<message::Schema>(bytes) }
 }
 

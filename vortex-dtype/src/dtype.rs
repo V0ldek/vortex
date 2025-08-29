@@ -221,7 +221,7 @@ impl StructDType {
 
     /// Get information about the referenced field, either by name or index
     /// Returns an error if the field is not found
-    pub fn field_info(&self, field: &Field) -> VortexResult<FieldInfo> {
+    pub fn field_info(&self, field: &Field) -> VortexResult<FieldInfo<'_>> {
         let index = match field {
             Field::Name(name) => self
                 .find_name(name)

@@ -39,7 +39,7 @@ impl Debug for ViewedArrayData {
 }
 
 impl ViewedArrayData {
-    pub fn flatbuffer(&self) -> fb::Array {
+    pub fn flatbuffer(&self) -> fb::Array<'_> {
         unsafe {
             let tab = flatbuffers::Table::new(self.flatbuffer.as_ref(), self.flatbuffer_loc);
             fb::Array::init_from_table(tab)
@@ -82,7 +82,7 @@ impl ViewedArrayData {
         })
     }
 
-    fn array_child(&self, idx: usize) -> Option<fb::Array> {
+    fn array_child(&self, idx: usize) -> Option<fb::Array<'_>> {
         let children = self.flatbuffer().children()?;
         (idx < children.len()).then(|| children.get(idx))
     }

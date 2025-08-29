@@ -65,7 +65,7 @@ impl<R: VortexReadAt> MessageReader<R> {
         Ok(true)
     }
 
-    fn peek(&self) -> Option<fb::Message> {
+    fn peek(&self) -> Option<fb::Message<'_>> {
         if self.finished {
             return None;
         }
@@ -308,7 +308,7 @@ impl ArrayMessageReader {
         }
     }
 
-    fn fb_bytes_as_batch(&self) -> VortexResult<fb::Batch> {
+    fn fb_bytes_as_batch(&self) -> VortexResult<fb::Batch<'_>> {
         unsafe {
             root_unchecked::<fb::Message>(
                 self.fb_msg

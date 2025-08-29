@@ -10,7 +10,7 @@ use crate::IntoArrayVariant;
 impl ArrayAccessor<[u8]> for VarBinArray {
     fn with_iterator<F, R>(&self, f: F) -> VortexResult<R>
     where
-        F: for<'a> FnOnce(&mut (dyn Iterator<Item = Option<&'a [u8]>>)) -> R,
+        F: for<'a> FnOnce(&mut dyn Iterator<Item = Option<&'a [u8]>>) -> R,
     {
         // TODO(ngates): what happens if bytes is much larger than sliced_bytes?
         let primitive = self.bytes().into_primitive()?;

@@ -406,7 +406,7 @@ impl VarBinViewArray {
     ///     // Do something with the `block`
     /// });
     /// ```
-    pub fn buffers(&self) -> Buffers {
+    pub fn buffers(&self) -> Buffers<'_> {
         Buffers {
             index: 0,
             n_buffers: u32::try_from(self.buffer_count())

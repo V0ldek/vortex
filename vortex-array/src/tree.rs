@@ -11,7 +11,7 @@ use crate::visitor::ArrayVisitor;
 use crate::ArrayData;
 
 impl ArrayData {
-    pub fn tree_display(&self) -> TreeDisplayWrapper {
+    pub fn tree_display(&self) -> TreeDisplayWrapper<'_> {
         TreeDisplayWrapper(self)
     }
 }

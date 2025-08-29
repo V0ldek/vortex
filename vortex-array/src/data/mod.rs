@@ -268,7 +268,7 @@ impl ArrayData {
     ///
     /// View arrays will return a reference to their bytes, while heap-backed arrays
     /// must first serialize their metadata, returning an owned byte array to the caller.
-    pub fn metadata_bytes(&self) -> VortexResult<Cow<[u8]>> {
+    pub fn metadata_bytes(&self) -> VortexResult<Cow<'_, [u8]>> {
         match &self.0 {
             InnerArrayData::Owned(array_data) => {
                 // Heap-backed arrays must first try and serialize the metadata.

@@ -60,7 +60,7 @@ struct ColumnarLayoutBuilder {
 }
 
 impl ColumnarLayoutBuilder {
-    fn flatbuffer(&self) -> footer::Layout {
+    fn flatbuffer(&self) -> footer::Layout<'_> {
         unsafe {
             let tab = flatbuffers::Table::new(&self.fb_bytes, self.fb_loc);
             footer::Layout::init_from_table(tab)

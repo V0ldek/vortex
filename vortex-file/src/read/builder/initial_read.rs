@@ -23,7 +23,7 @@ pub struct InitialRead {
 }
 
 impl InitialRead {
-    pub fn fb_postscript(&self) -> VortexResult<footer::Postscript> {
+    pub fn fb_postscript(&self) -> VortexResult<footer::Postscript<'_>> {
         Ok(unsafe {
             root_unchecked::<footer::Postscript>(&self.buf[self.fb_postscript_byte_range.clone()])
         })
@@ -38,7 +38,7 @@ impl InitialRead {
     }
 
     /// The `Layout` flatbuffer.
-    pub fn fb_layout(&self) -> VortexResult<footer::Layout> {
+    pub fn fb_layout(&self) -> VortexResult<footer::Layout<'_>> {
         Ok(unsafe { root_unchecked::<footer::Layout>(&self.buf[self.fb_layout_byte_range()?]) })
     }
 

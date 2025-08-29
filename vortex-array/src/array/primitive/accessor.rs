@@ -8,7 +8,7 @@ use crate::validity::ArrayValidity;
 impl<T: NativePType> ArrayAccessor<T> for PrimitiveArray {
     fn with_iterator<F, R>(&self, f: F) -> VortexResult<R>
     where
-        F: for<'a> FnOnce(&mut (dyn Iterator<Item = Option<&'a T>>)) -> R,
+        F: for<'a> FnOnce(&mut dyn Iterator<Item = Option<&'a T>>) -> R,
     {
         match self.logical_validity().to_null_buffer()? {
             None => {

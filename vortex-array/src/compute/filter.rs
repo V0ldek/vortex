@@ -237,7 +237,7 @@ impl FilterMask {
     /// Returns the best iterator based on a selectivity threshold.
     ///
     /// Currently, this threshold is fixed at 0.8 based on Arrow Rust.
-    pub fn iter(&self) -> VortexResult<FilterIter> {
+    pub fn iter(&self) -> VortexResult<FilterIter<'_>> {
         Ok(
             if self.range_selectivity > FILTER_SLICES_SELECTIVITY_THRESHOLD {
                 // Iterate over slices

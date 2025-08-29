@@ -264,7 +264,7 @@ impl<'a> CompressedArray<'a> {
     }
 
     #[inline]
-    pub fn path(&self) -> &Option<CompressionTree> {
+    pub fn path(&self) -> &Option<CompressionTree<'_>> {
         &self.path
     }
 

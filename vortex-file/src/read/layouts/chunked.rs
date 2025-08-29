@@ -68,7 +68,7 @@ struct ChunkedLayoutBuilder {
 }
 
 impl ChunkedLayoutBuilder {
-    fn flatbuffer(&self) -> footer::Layout {
+    fn flatbuffer(&self) -> footer::Layout<'_> {
         unsafe {
             let tab = flatbuffers::Table::new(&self.fb_bytes, self.fb_loc);
             footer::Layout::init_from_table(tab)
@@ -101,7 +101,7 @@ impl ChunkedLayoutBuilder {
             .unwrap_or(false)
     }
 
-    fn children(&self) -> impl Iterator<Item = (usize, footer::Layout)> {
+    fn children(&self) -> impl Iterator<Item = (usize, footer::Layout<'_>)> {
         self.flatbuffer()
             .children()
             .unwrap_or_default()
